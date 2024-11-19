@@ -1,6 +1,10 @@
 import tkinter as tk
 from inne import getImg, get_path, Chosenimg, saveMultipleImg
 from filters import adaptFilter
+from filters import adaptive_median_filter
+from filters import adaptive_wiener_filter
+from filters import adaptive_gaussian_filter
+from filters import bilateral_filter
 
 
 root = tk.Tk()
@@ -94,13 +98,23 @@ frameImgZapisz.pack(side=tk.TOP, padx=10, pady=10)
 enPLButt = tk.Button(frameButtons, text="En/Pl", command=change_language)
 enPLButt.place(relx=0.975, rely=0)
 
-button1 = tk.Button(buttonFrame, textvariable=str2, width=25, height=5, cursor="hand2")
-button1.pack(side=tk.LEFT,padx=50, pady=40)
-button2 = tk.Button(buttonFrame, textvariable=str3, width=25, height=5, cursor="hand2")
+# Przycisk do filtra medianowego (button1)
+button1 = tk.Button(buttonFrame, textvariable=str2, width=25, height=5, cursor="hand2",
+                    command=lambda: adaptive_median_filter("outputFolder/NoisyImg.jpg", label3))
+button1.pack(side=tk.LEFT, padx=50, pady=40)
+
+# Przycisk do filtra Wienerowskiego (button2)
+button2 = tk.Button(buttonFrame, textvariable=str3, width=25, height=5, cursor="hand2",
+                    command=lambda: adaptive_wiener_filter("outputFolder/NoisyImg.jpg", label3))
 button2.pack(side=tk.LEFT, padx=50, pady=10)
-button3 = tk.Button(buttonFrame, textvariable=str4, width=25, height=5, cursor="hand2")
+
+# Przycisk do filtra Gaussa 
+button3 = tk.Button(buttonFrame, textvariable=str4, width=25, height=5, cursor="hand2",
+                    command=lambda: adaptive_gaussian_filter("outputFolder/NoisyImg.jpg", label3))
 button3.pack(side=tk.LEFT, padx=50, pady=10)
-button4 = tk.Button(buttonFrame, textvariable=str5, width=25, height=5, cursor="hand2")
+# Przycisk do filtra bilateralnego
+button4 = tk.Button(buttonFrame, textvariable=str5, width=25, height=5, cursor="hand2",
+                    command=lambda: bilateral_filter("outputFolder/NoisyImg.jpg", label3))
 button4.pack(side=tk.LEFT, padx=50, pady=10)
 
 
@@ -137,4 +151,3 @@ label3 = tk.Label(frame3)
 label3.pack(padx=10, pady=10)
 
 root.mainloop()
-
