@@ -58,7 +58,7 @@ def load_imageWPath(path, label):
         label.image = img
     except Exception as e:
         messagebox.showerror("Błąd", f"Nie udało się załadować obrazu: {e}")
-    SomeNoise()
+    SomeNoise(-100, 100)
 
 def get_path(label):
     global img_path 
@@ -68,30 +68,17 @@ def get_path(label):
 
 # Funkcja do usuwania obrazów     
 # Niepotrzebna
-#
-#def delete_file(filePath):
-#    if os.path.exists(filePath):
-#        os.remove(filePath)
-#        print(f"Plik {filePath} został usunięty")
-#    else:
-#        print(f"Plik {filePath} nie istnieje")    
 
-# Funkcja która dodaje szum
-
-def SomeNoise():
-    if selectedImg:  
-        image = cv2.imread(selectedImg, cv2.IMREAD_GRAYSCALE)
-
-        mean = 0
-        std_dev = 25
-
-        noise = np.random.normal(-100, 120, image.shape)
-
-        noisy_img = image + noise
-
-        saveImg(noisy_img, 'outputFolder', 'NoisyImg.jpg')
+def delete_file(folderPath):
+    if os.path.exists(folderPath):
+        for filename in os.listdir(folderPath):
+            filepath = os.path.join(folderPath, filename)
+            if os.path.isfile(filepath):
+                os.remove(filepath)
     else:
-        print("No image selected!")
+        print(f"Folder {folderPath} nie istnieje")    
+
+
 
 
 def Chosenimg(path, label):
@@ -103,6 +90,24 @@ def Chosenimg(path, label):
         label.image = img
     except Exception as e:
         messagebox.showerror("Błąd")    
+
+
+
+
+
+
+
+def save_image(image, folder, filename):
+    """Save the given image to the specified folder with the given filename."""
+    os.makedirs(folder, exist_ok=True)
+    path = os.path.join(folder, filename)
+    try:
+        cv2.imwrite(path, image)
+    except Exception as e:
+        messagebox.showerror("Error", f"Failed to save image: {e}")
+
+
+
 
 
 

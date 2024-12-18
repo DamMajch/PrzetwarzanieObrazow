@@ -3,7 +3,7 @@ from tkinter import *
 from PIL import Image, ImageTk
 import cv2
 from inne import saveImg
-
+from scipy.signal import wiener
 
 # Przykładowy filtr działanie:
 # Filtruje zaszumiony obraz z scieżki: "outputFolder/NoisyImg.jpg"
@@ -37,23 +37,28 @@ def adaptive_median_filter(img_path, label, max_window_size=7):
 
     
 def adaptive_wiener_filter(img_path, label):
+    # Wczytanie obrazu w skali szarości
     img = cv2.imread(img_path, cv2.IMREAD_GRAYSCALE)
-    filtered_img = cv2.medianBlur(img, 5)
+
     
-    # Przeskalowanie obrazu do wyświetlenia
-    
+    # Zastosowanie filtru Wienera
+    filtered_img = wiener(img, mysize=(5, 5))  # Rozmiar okna można dostosować
+
+    # Przekształcenie wyniku na typ uint8 (zakres 0-255)
+    filtered_img = np.clip(filtered_img, 0, 255).astype(np.uint8)
+
+    # Przeskalowanie obrazu do wyświetlenia w Tkinterze
     displayImg = Image.fromarray(filtered_img)
     displayImg = displayImg.resize((300, 300), Image.LANCZOS)
-  
+
     # Wyświetlenie obrazu w Tkinterze
-    
-    img = ImageTk.PhotoImage(displayImg)
-    label.config(image=img)
-    label.image = img
-    
+    img_display = ImageTk.PhotoImage(displayImg)
+    label.config(image=img_display)
+    label.image = img_display
+
     # Zapis obrazu do folderu
-    
     saveImg(filtered_img, 'outputFolder', 'FilImg.png')
+
 
 def adaptive_gaussian_filter(img_path, label, kernel_size=15, max_sigma=5.0):
     """
