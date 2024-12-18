@@ -273,7 +273,7 @@ Sciezka = "outputFolder/NoisyImg.jpg"
 # Przycisk do zaszumienia obrazu
 
 szumFrame = tk.Frame(frame2, bg="#327fd5")
-szumFrame.place(relx=0.1, rely=0, relheight=0.25)
+szumFrame.pack(padx=10, pady=2)
 
 open_button1 = tk.Button(frame1, textvariable=str6, width=12, command=lambda: choose_image(label1), cursor="hand2", font=("Arial", 11))
 open_button1.pack(padx=10, pady=10)
@@ -289,7 +289,7 @@ open_button3.pack(padx=10, pady=10)
 
 
 label2 = tk.Label(frame2, bg="#327fd5")
-label2.pack(side=tk.BOTTOM ,padx=10, pady=10)
+label2.pack(padx=10, pady=0)
 
 label1 = tk.Label(frame1)
 label1.pack(padx=10, pady=10)
