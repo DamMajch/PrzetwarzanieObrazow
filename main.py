@@ -1,7 +1,7 @@
 import tkinter as tk
 from inne import delete_file, saveMultipleImg, save_image
-from filters import adaptive_median_filter
-from filters import adaptive_wiener_filter
+from filters import sobel_canny_binary_gaussian_filter
+from filters import advanced_edge_preserving_filter
 from filters import adaptive_gaussian_filter
 from filters import bilateral_filter
 from tkinter import ttk
@@ -78,7 +78,6 @@ def add_min_max(nois_min, nois_max):
 
 default_Folder = "images"
 def choose_image(label):
-    """Open file dialog to choose an image and load it."""
     global default_Folder
     global button_clicked
     button_clicked = True
@@ -87,7 +86,6 @@ def choose_image(label):
         load_image(img_path, label)
 
 def update_label(val):
-    """Update the slider label and add noise with the current slider value."""
     sliderLabel.config(text=f"Value: {float(val):.2f}")
     if selectedImg:
         if isGaussian:
@@ -101,18 +99,31 @@ def on_hover(event, frame, label):
     button_width = event.widget.winfo_width()
 
     # Ustaw pozycję hover frame po prawej stronie przycisku
-    frame.place(x=button_x + button_width - 250, y=button_y + 110)
+    frame.place(x=1150, y=90)
     label.place(x = 10, y=10)
 
 def off_hover(event, frame, label):
     frame.place_forget()
     label.place_forget()
 
+def adjust_scale():
+    scaling_factor = root.tk.call("tk","scaling");
+    print(f"Obecna skala: {scaling_factor}")
+    dpi = root.winfo_pixels('1i')
+    print(f"Rozpoznana DPI: {dpi}")
+
+    scale_factor  = dpi / 96
+    root.tk.call("tk", "scaling", scale_factor )
+    print(f"Nowa skala: {scale_factor }")
+
 root = tk.Tk()
+root.state("zoomed")
 root.title("Filtry adaptacyjne")
 
+adjust_scale()
+
 str1 = tk.StringVar(value="Filtry adaptacyjne") 
-str2 = tk.StringVar(value="Adaptacyjny Filtr Medianowy") 
+str2 = tk.StringVar(value="Filtrowanie Sobela, Cannym, binaryzacji i Gaussa") 
 str3 = tk.StringVar(value="Adaptacyjny Filtr Wienerowski") 
 str4 = tk.StringVar(value="Adaptacyjny Filtr Gaussowski") 
 str5 = tk.StringVar(value="Filtr Bilateralny") 
@@ -196,22 +207,19 @@ frame3.place(relx=0.66666, rely=0.5, relwidth=0.33333, relheight=0.5)
 # Zielony Frame na przyciski
 
 buttonFrame = tk.Frame(frameButtons, bg='#326f39')
-buttonFrame.pack(padx=0, pady=0)
+buttonFrame.place(relx=0.27, rely=0.27, relheight=0.6, relwidth=0.45)
 
 butt1Fr =  tk.Frame(buttonFrame, bg='#326f39')
-butt1Fr.pack(side=tk.LEFT, padx=10, pady=10)
+butt1Fr.place(relx=-0.025, rely=-0.15, relheight=0.55, relwidth=0.55)
 
 butt2Fr =  tk.Frame(buttonFrame, bg='#326f39')
-butt2Fr.pack(side=tk.LEFT, padx=10, pady=10)
+butt2Fr.place(relx=0.5, rely=-0.15, relheight=0.55, relwidth=0.55)
 
 butt3Fr =  tk.Frame(buttonFrame, bg='#326f39')
-butt3Fr.pack(side=tk.LEFT, padx=10, pady=10)
+butt3Fr.place(relx=-0.025, rely=0.38, relheight=0.55, relwidth=0.55)
 
 butt4Fr =  tk.Frame(buttonFrame, bg='#326f39')
-butt4Fr.pack(side=tk.LEFT, padx=10, pady=10)
-
-butt5Fr =  tk.Frame(buttonFrame, bg='#326f39')
-butt5Fr.pack(side=tk.LEFT, padx=10, pady=10)
+butt4Fr.place(relx=0.5, rely=0.38, relheight=0.55, relwidth=0.55)
 
 
 # Frame dla wyświetlania obrazu
@@ -222,12 +230,12 @@ frameImg.pack(side=tk.TOP, padx=10, pady=10)
 # Frame dla wyświetlania zaszumionego obrazu
 
 frameImgSzum = tk.Frame(frame2, bg='blue')
-frameImgSzum.pack( padx=10, pady=10)
+frameImgSzum.pack(padx=10, pady=10)
 
 sliderFrame = ttk.Frame(frame2)
 sliderFrame.pack(side=tk.RIGHT, padx=2, pady=2)
 
-slider = ttk.Scale(sliderFrame, length=300 ,from_=0, to=100, orient="vertical", command=update_label)
+slider = ttk.Scale(sliderFrame, length=300 ,from_=100, to=0, orient="vertical", command=update_label)
 slider.pack(pady=10)
 
 sliderLabel = ttk.Label(sliderFrame, text="Value: 0")
@@ -246,70 +254,67 @@ enPLButt.pack(side="top", anchor="e")
 # Przycisk do filtra medianowego (button1)
 
 button1 = tk.Button(butt1Fr, textvariable=str2, width=24, height=4, cursor="hand2", font=("Arial", 15),
-                    command=lambda: adaptive_median_filter("outputFolder/NoisyImg.jpg", label3))
-button1.pack(side=tk.BOTTOM, padx=50, pady=0)
+                    command=lambda: sobel_canny_binary_gaussian_filter("outputFolder/NoisyImg.jpg", label3))
+button1.place(relx=0.2, rely= 0.5,relwidth=0.6, relheight=0.5)
 
 # Przycisk do filtra Wienerowskiego (button2)
 
 button2 = tk.Button(butt2Fr, textvariable=str3, width=24, height=4, cursor="hand2", font=("Arial", 15),
-                    command=lambda: adaptive_wiener_filter("outputFolder/NoisyImg.jpg", label3))
-button2.pack(side=tk.BOTTOM, padx=50, pady=0)
+                    command=lambda: advanced_edge_preserving_filter("outputFolder/NoisyImg.jpg", label3))
+button2.place(relx=0.2, rely= 0.5,relwidth=0.6, relheight=0.5)
 
 # Przycisk do filtra Gaussa 
 
 button3 = tk.Button(butt3Fr, textvariable=str4, width=24, height=4, cursor="hand2", font=("Arial", 15),
                     command=lambda: adaptive_gaussian_filter("outputFolder/NoisyImg.jpg", label3))
-button3.pack(side=tk.BOTTOM, padx=50, pady=0)
+button3.place(relx=0.2, rely= 0.5,relwidth=0.6, relheight=0.5)
 # Przycisk do filtra bilateralnego
 
 
 button4 = tk.Button(butt4Fr, textvariable=str5, width=24, height=4, cursor="hand2", font=("Arial", 15),
                     command=lambda: bilateral_filter("outputFolder/NoisyImg.jpg", label3))
-button4.pack(side=tk.BOTTOM, padx=50, pady=0)
+button4.place(relx=0.2, rely= 0.5,relwidth=0.6, relheight=0.5)
 
 
 Sciezka = "outputFolder/NoisyImg.jpg"
 
 # Przycisk do zaszumienia obrazu
-
 szumFrame = tk.Frame(frame2, bg="#327fd5")
-szumFrame.place(relx=0.1, rely=0, relheight=0.20)
+szumFrame.pack(padx=10, pady=2)
 
 open_button1 = tk.Button(frame1, textvariable=str6, width=12, command=lambda: choose_image(label1), cursor="hand2", font=("Arial", 11))
 open_button1.pack(padx=10, pady=10)
 
-open_button2 = tk.Button(szumFrame, textvariable=str7, width=18, command=lambda: add_noise(0, 50), cursor="hand2", font=("Arial", 11))
+open_button2 = tk.Button(szumFrame, textvariable=str7, width=18, command=lambda: add_noise(0, 0), cursor="hand2", font=("Arial", 11))
 open_button2.pack(side=tk.LEFT, padx=10, pady=10)
 
-open_button2_min_max = tk.Button(szumFrame, textvariable=str14, width=18, command=lambda: add_min_max(-50, 50), cursor="hand2", font=("Arial", 11))
+open_button2_min_max = tk.Button(szumFrame, textvariable=str14, width=18, command=lambda: add_min_max(0, 0), cursor="hand2", font=("Arial", 11))
 open_button2_min_max.pack(side=tk.RIGHT ,padx=10, pady=10)
 
 open_button3 = tk.Button(frame3, textvariable=str8, width=12, command=lambda: saveMultipleImg(cv2.imread("outputFolder/NoisyImg.jpg"), "SavedImages"), cursor="hand2", font=("Arial", 11))
 open_button3.pack(padx=10, pady=10)
 
 
+# to tu label 2 
 label2 = tk.Label(frame2, bg="#327fd5")
-label2.pack(expand=True, padx=10, pady=(10, 75))  # 10 pikseli od góry, 50 pikseli od dołu
+label2.pack(padx=10, pady=0)
 
-
-
-
-label1 = tk.Label(frame1)
+label1 = tk.Label(frame1, bg="#3256d5")
 label1.pack(padx=10, pady=10)
 
-label3 = tk.Label(frame3)
+label3 = tk.Label(frame3, bg="#32bfd5")
 label3.pack(padx=10, pady=10)
 
 
-hovFrame1 = tk.Frame(root, bg="#111110", width=200, height=180)
-hovFrame2 = tk.Frame(root, bg="#111110", width=200, height=180)
-hovFrame3 = tk.Frame(root, bg="#111110", width=200, height=180)
-hovFrame4 = tk.Frame(root, bg="#111110", width=200, height=180)
+hovFrame1 = tk.Frame(root, bg="#111110", width=300, height=280)
+hovFrame2 = tk.Frame(root, bg="#111110", width=300, height=280)
+hovFrame3 = tk.Frame(root, bg="#111110", width=300, height=280)
+hovFrame4 = tk.Frame(root, bg="#111110", width=300, height=280)
 
-hovLabel1 = tk.Label(hovFrame1, textvariable=str10, bg="#111110", fg="white", wraplength=170)
-hovLabel2 = tk.Label(hovFrame2, textvariable=str11, bg="#111110", fg="white", wraplength=170)
-hovLabel3 = tk.Label(hovFrame3, textvariable=str12, bg="#111110", fg="white", wraplength=170)
-hovLabel4 = tk.Label(hovFrame4, textvariable=str13, bg="#111110", fg="white", wraplength=170)
+hovLabel1 = tk.Label(hovFrame1, textvariable=str10, bg="#111110", fg="white", wraplength=280, font=("Arial", 16))
+hovLabel2 = tk.Label(hovFrame2, textvariable=str11, bg="#111110", fg="white", wraplength=280, font=("Arial", 16))
+hovLabel3 = tk.Label(hovFrame3, textvariable=str12, bg="#111110", fg="white", wraplength=280, font=("Arial", 16))
+hovLabel4 = tk.Label(hovFrame4, textvariable=str13, bg="#111110", fg="white", wraplength=280, font=("Arial", 16))
 
 button1.bind("<Enter>", lambda e: on_hover(e,hovFrame1, hovLabel1))  
 button1.bind("<Leave>", lambda e: off_hover(e, hovFrame1, hovLabel1))
@@ -322,6 +327,14 @@ button3.bind("<Leave>", lambda e: off_hover(e, hovFrame3, hovLabel3))
 
 button4.bind("<Enter>", lambda e: on_hover(e,hovFrame4, hovLabel4))  
 button4.bind("<Leave>", lambda e: off_hover(e, hovFrame4, hovLabel4))
+
+def resize(ev):
+    width = ev.width
+    height = ev.height
+    print(f"Window resized to: {width}x{height}")
+    adjust_scale()
+
+root.bind("<Configure>", resize)
 
 root.mainloop()
 

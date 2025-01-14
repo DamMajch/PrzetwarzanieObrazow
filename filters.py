@@ -9,7 +9,7 @@ from scipy.signal import wiener
 # Filtruje zaszumiony obraz z scieżki: "outputFolder/NoisyImg.jpg"
 # potem zapisuje ten obraz do outputFolder jako FilImg.png
 # robi to żeby później można było go zapisać do folderu "ZapisaneObrazy" po kliknięciu Zapisz obraz
-    
+'''
 def adaptive_median_filter(img_path, label, max_window_size=7):
     """
     Optymalizacja filtra medianowego z wykorzystaniem wbudowanego cv2.medianBlur.
@@ -58,6 +58,93 @@ def adaptive_wiener_filter(img_path, label):
 
     # Zapis obrazu do folderu
     saveImg(filtered_img, 'outputFolder', 'FilImg.png')
+
+
+'''
+
+def sobel_canny_binary_gaussian_filter(img_path, label):
+    """
+    Delikatne filtrowanie obrazów za pomocą Sobela, Cannym, binaryzacji i Gaussa.
+    
+    Args:
+        img_path (str): Ścieżka do obrazu wejściowego.
+        label (tk.Label): Etykieta Tkintera do wyświetlenia obrazu.
+    """
+    # Załaduj obraz w odcieniach szarości
+    img = cv2.imread(img_path, cv2.IMREAD_GRAYSCALE)
+
+
+   # Filtr Gaussa (delikatne wygładzenie szumów na wejściu)
+    gaussian_blur = cv2.GaussianBlur(img, (3, 3), 0)
+
+    # Filtr Sobela (zmniejszona intensywność gradientów)
+    sobel_x = cv2.Sobel(gaussian_blur, cv2.CV_64F, 1, 0, ksize=3)
+    sobel_y = cv2.Sobel(gaussian_blur, cv2.CV_64F, 0, 1, ksize=3)
+    sobel_combined = np.sqrt(sobel_x**2 + sobel_y**2)
+    sobel_combined = np.clip(sobel_combined, 0, 255).astype(np.uint8)
+
+    # Binaryzacja adaptacyjna
+    adaptive_binary = cv2.adaptiveThreshold(
+        sobel_combined, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, 2
+    )
+
+    # Delikatna filtracja Gaussa na końcu
+    final_output = cv2.GaussianBlur(adaptive_binary, (3, 3), 0)
+
+    # Przeskalowanie obrazu do wyświetlenia w Tkinterze
+    displayImg = Image.fromarray(final_output)
+    displayImg = displayImg.resize((300, 300), Image.LANCZOS)
+
+    # Wyświetlenie obrazu w Tkinterze
+    img_display = ImageTk.PhotoImage(displayImg)
+    label.config(image=img_display)
+    label.image = img_display
+
+    # Zapis obrazu do folderu
+    saveImg(final_output, 'outputFolder', 'FilImg.png')
+
+    
+def advanced_edge_preserving_filter(img_path, label):
+    """
+    Filtr zachowujący krawędzie:
+    - Sobel do wykrycia krawędzi.
+    - Canny do binaryzacji.
+    - Filtr Gaussowski do punktów niebędących krawędziami.
+    """
+    # Załaduj obraz w odcieniach szarości
+    img = cv2.imread(img_path, cv2.IMREAD_GRAYSCALE)
+ 
+
+    # Krok 1: Sobel - Detekcja krawędzi
+    sobel_x = cv2.Sobel(img, cv2.CV_64F, 1, 0, ksize=3)
+    sobel_y = cv2.Sobel(img, cv2.CV_64F, 0, 1, ksize=3)
+    sobel_edges = cv2.magnitude(sobel_x, sobel_y)  # Kombinacja gradientów
+    sobel_edges = cv2.convertScaleAbs(sobel_edges)  # Konwersja do zakresu 0-255
+
+    # Krok 2: Canny - Binaryzacja krawędzi
+    canny_edges = cv2.Canny(sobel_edges, 50, 150)
+
+    # Krok 3: Maskowanie punktów krawędziowych
+    # Tworzymy maskę punktów niebędących krawędziami
+    mask_non_edges = cv2.bitwise_not(canny_edges)
+
+    # Krok 4: Filtracja Gaussowska (dolnoprzepustowa) na reszcie punktów
+    gaussian_blur = cv2.GaussianBlur(img, (3, 3), 0)
+
+    # Krok 5: Łączenie krawędzi i filtrowanego tła
+    # Krawędzie pozostają oryginalne, reszta punktów jest filtrowana
+    result = cv2.bitwise_and(img, canny_edges) + cv2.bitwise_and(gaussian_blur, mask_non_edges)
+
+    # Wyświetlenie wyniku w Tkinterze
+    displayImg = Image.fromarray(result)
+    displayImg = displayImg.resize((300, 300), Image.LANCZOS)
+
+    img_display = ImageTk.PhotoImage(displayImg)
+    label.config(image=img_display)
+    label.image = img_display
+
+    # Zapis przetworzonego obrazu do pliku
+    saveImg(result, 'outputFolder', 'FilImg.png')
 
 
 def adaptive_gaussian_filter(img_path, label, kernel_size=15, max_sigma=5.0):
